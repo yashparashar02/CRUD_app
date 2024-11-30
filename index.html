@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    .task {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Task Manager</h1>
+  <input id="title" placeholder="Task Title">
+  <input id="description" placeholder="Task Description">
+  <button onclick="createTask()">Add Task</button>
+  <div id="tasks"></div>
+
+  <script>
+    const API_URL = "http://localhost:5000/tasks";
+
+    async function fetchTasks() {
+      const res = await fetch(API_URL);
+      const tasks = await res.json();
+      const taskContainer = document.getElementById("tasks");
+      taskContainer.innerHTML = tasks
+        .map(task => `<div class="task">
+          <span>${task.title}</span>
+          <button onclick="deleteTask('${task._id}')">Delete</button>
+        </div>`)
+        .join("");
+    }
+
+    async function createTask() {
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description }),
+      });
+      fetchTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      fetchTasks();
+    }
+
+    fetchTasks();
+  </script>
+</body>
+</html>
